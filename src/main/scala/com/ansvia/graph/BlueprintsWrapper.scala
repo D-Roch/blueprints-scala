@@ -387,7 +387,12 @@ object BlueprintsWrapper {
     def transact[T](wrappedFunc: => T)(implicit db:TransactionalGraph):T = {
         try {
             val rv = wrappedFunc
-            db.commit()
+            import scala.concurrent.{future, Await}
+            import scala.concurrent.duration._
+            import scala.concurrent.ExecutionContext.Implicits.global
+            Await.result(future {
+              db.commit()
+            }, Duration.Inf)
             rv
         }catch{
             case e:Exception =>
